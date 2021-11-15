@@ -8,6 +8,18 @@
 
 using namespace std;
 
+static inline long ptrToLong(void* ptr) {
+    return (long) ptr;
+}
+
+static inline uint8_t * longToBytePtr(long ptr) {
+    return (uint8_t *) ptr;
+}
+
+static inline int32_t * longToIntPtr(long ptr) {
+    return (int32_t *) ptr;
+}
+
 static inline uint32_t murmur_32_scramble(uint32_t k) {
     k *= 0xcc9e2d51;
     k = (k << 15) | (k >> 17);
@@ -50,15 +62,17 @@ uint32_t murmur3_32(const uint8_t *key, size_t len, uint32_t seed) {
 
 
 class Buffer {
-    explicit Buffer(uint8_t *address) : address((long) address) {}
+    explicit Buffer(uint8_t *address) : address(ptrToLong(address)) {}
 
 public:
     long address;
 
     explicit Buffer(long address) : address(address) {}
 
-    explicit Buffer(int size) : Buffer(new uint8_t[sizeof(int) + size]) {
-        this->size() = size;
+    static Buffer alloc(int size) {
+        Buffer b(new uint8_t[sizeof(int) + size]);
+        b.size() = size;
+        return b;
     }
 
     void release() const {
@@ -66,11 +80,11 @@ public:
     }
 
     uint8_t * asByteArray(int offset = 0) const {
-        return ((uint8_t *) address) + offset;
+        return longToBytePtr(address) + offset;
     }
 
-    int * asIntArray(int offset = 0) const {
-        return ((int *) address) + offset;
+    int32_t * asIntArray(int offset = 0) const {
+        return longToIntPtr(address) + offset;
     }
 
     int &size() {
@@ -128,24 +142,38 @@ const unsigned long noneAddress = 0;
 
 using Map = unordered_map<Key, Value>;
 
+
+static inline Map * longToMapPtr(long ptr) {
+    return (Map *) ptr;
+}
+
+static inline Map& longToMap(long ptr) {
+    return *longToMapPtr(ptr);
+}
+
+static inline Map::iterator * longToIteratorPtr(long ptr) {
+    return (Map::iterator *) ptr;
+}
+
+static inline Map::iterator & longToIterator(long ptr) {
+    return *longToIteratorPtr(ptr);
+}
+
 long alloc(int size) {
-    auto kv = Buffer(size);
-    return kv.address;
+    return Buffer::alloc(size).address;
 }
 
 void release(long bufferAddress) {
-    auto b = Buffer(bufferAddress);
-    b.release();
+    Buffer(bufferAddress).release();
 }
 
 long build() {
-    auto *u = new Map();
-    return (long) u;
+    return ptrToLong(new Map());
 }
 
-void destroy(unsigned long map) {
-    auto *u = (Map *) map;
-    for (auto & i : *u) {
+void destroy(long map) {
+    auto * u = longToMapPtr(map);
+    for (auto & i : (*u)) {
         i.first.release();
         i.second.release();
     }
@@ -153,13 +181,11 @@ void destroy(unsigned long map) {
 }
 
 long size(long map) {
-    auto *u = (Map *) map;
-    return (long) u->size();
+    return (long) longToMap(map).size();
 }
 
 long put(long map, long key, long value) {
-    auto *u = (Map *) map;
-    pair result = u->insert_or_assign(Key(key), Value(value));
+    pair result = longToMap(map).insert_or_assign(Key(key), Value(value));
     if (result.second) {
         return noneAddress;
     } else {
@@ -168,8 +194,7 @@ long put(long map, long key, long value) {
 }
 
 long putIfAbsent(long map, long key, long value) {
-    auto *u = (Map *) map;
-    pair result = u->try_emplace(Key(key), Value(value));
+    pair result = longToMap(map).try_emplace(Key(key), Value(value));
     if (result.second) {
         return noneAddress;
     } else {
@@ -178,57 +203,45 @@ long putIfAbsent(long map, long key, long value) {
 }
 
 long get(long map, long key) {
-    auto *u = (Map *) map;
-    auto search = u->find(Key(key));
-    if (search == u->end()) {
+    auto u = longToMap(map);
+    auto search = u.find(Key(key));
+    if (search == u.end()) {
         return noneAddress;
     } else {
-        return search->first.address;
+        return search->second.address;
     }
 }
 
 long initIterator(long map) {
-    auto *u = (Map *) map;
-    auto *i = new Map::iterator(u->begin());
-    return (long) i;
+    return ptrToLong(new Map::iterator(longToMap(map).begin()));
 }
 
 void destroyIterator(long iterator) {
-    auto *i = (Map::iterator *) iterator;
-    delete i;
+    delete longToIteratorPtr(iterator);
 }
 
 bool hasNext(long map, long iterator) {
-    auto *u = (Map *) map;
-    auto *i = (Map::iterator *) iterator;
-    return *i != u->end();
+    return longToIterator(iterator) != longToMap(map).end();
 }
 
 void incrementIterator(long iterator) {
-    auto *i = (Map::iterator *) iterator;
-    ++(*i);
+    ++longToIterator(iterator);
 }
 
 long getIteratorKey(long iterator) {
-    return (*(Map::iterator *) iterator)->first.address;
+    return longToIterator(iterator)->first.address;
 }
 
 unsigned long getIteratorValue(long iterator) {
-    return (*(Map::iterator *) iterator)->second.address;
+    return longToIterator(iterator)->second.address;
 }
 
 long nextKey(long iterator) {
-    auto *i = (Map::iterator *) iterator;
-    long address = (*i)->first.address;
-    ++(*i);
-    return address;
+    return (longToIterator(iterator)++)->first.address;
 }
 
 long nextValue(long iterator) {
-    auto *i = (Map::iterator *) iterator;
-    long address = (*i)->second.address;
-    ++(*i);
-    return address;
+    return (longToIterator(iterator)++)->second.address;
 }
 
 // Shared library interface
