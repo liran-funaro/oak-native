@@ -4,7 +4,11 @@ project(oakcpp)
 find_package(Java 1.8 REQUIRED)
 find_package(Java COMPONENTS Development)
 
-find_package(JNI)
+# We are only interested in finding jni.h: we do not care about extended JVM
+# functionality or the AWT library.
+set(JAVA_AWT_INCLUDE_PATH " ")
+set(JNI_INCLUDE_PATH2 " ")
+find_package(JNI REQUIRED)
 INCLUDE_DIRECTORIES(${JNI_INCLUDE_DIRS})
 
 set(CMAKE_CXX_STANDARD 17)
