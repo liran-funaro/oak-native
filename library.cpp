@@ -185,7 +185,7 @@ long size(long map) {
 }
 
 long put(long map, long key, long value) {
-    pair result = longToMap(map).insert_or_assign(Key(key), Value(value));
+    auto result = longToMap(map).insert_or_assign(Key(key), Value(value));
     if (result.second) {
         return noneAddress;
     } else {
@@ -194,7 +194,7 @@ long put(long map, long key, long value) {
 }
 
 long putIfAbsent(long map, long key, long value) {
-    pair result = longToMap(map).try_emplace(Key(key), Value(value));
+    auto result = longToMap(map).try_emplace(Key(key), Value(value));
     if (result.second) {
         return noneAddress;
     } else {
