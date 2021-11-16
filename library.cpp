@@ -76,7 +76,7 @@ public:
     }
 
     void release() const {
-        delete asByteArray();
+        delete[] asByteArray();
     }
 
     uint8_t * asByteArray(int offset = 0) const {
