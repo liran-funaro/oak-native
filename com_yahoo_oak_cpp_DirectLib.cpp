@@ -1,5 +1,5 @@
 #include <jni.h>
-#include <linux/jni_md.h>
+#include <jni_md.h>
 
 #include "oakcpp.hpp"
 #include "com_yahoo_oak_cpp_DirectLib.h"
