@@ -21,10 +21,10 @@ INCLUDE_DIRECTORIES(${JNI_INCLUDE_DIRS})
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(CMAKE_CXX_FLAGS "-O3 -Wall -Wextra")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall")
+set(CMAKE_CXX_FLAGS "-O3 -Ofast -Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
-add_library(oakcpp SHARED library.cpp)
+add_library(oakcpp SHARED com_yahoo_oak_cpp_DirectLib.cpp)
 
 install(
         TARGETS oakcpp
