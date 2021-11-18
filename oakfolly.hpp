@@ -2,17 +2,32 @@
 #include <cstring>
 #include <string>
 #include <utility>
-#include <unordered_map>
+
+#include <folly/AtomicHashMap.h>
 
 #include "keyvalue.hpp"
 
-#ifndef _oak_cpp_hpp
-#define _oak_cpp_hpp
+#ifndef _oak_junction_hpp
+#define _oak_junction_hpp
 
 
 const unsigned long NONE_ADDRESS = 0;
 
-using Map = unordered_map<Key, Value>;
+class hash_long {
+public:
+    std::size_t operator()(const long k) const {
+        return keyHash(Key(k));
+    }
+};
+
+class equal_to_long {
+public:
+    bool operator()(const long lhs, const long rhs) const {
+        return Key(lhs) == Key(rhs);
+    }
+};
+
+using Map = folly::AtomicHashMap<long, Value, hash_long, equal_to_long>;
 
 
 static inline Map * longToMapPtr(long ptr) {
@@ -31,6 +46,7 @@ static inline Map::iterator & longToIterator(long ptr) {
     return *longToIteratorPtr(ptr);
 }
 
+
 static inline long alloc(int size) {
     return Buffer::alloc(size).address;
 }
@@ -43,13 +59,13 @@ static inline int release(long bufferAddress) {
 }
 
 static inline long build(long maxPopulation) {
-    return ptrToLong(new Map());
+    return ptrToLong(new Map(maxPopulation));
 }
 
 static inline void destroy(long map) {
     auto * u = longToMapPtr(map);
     for (auto & i : (*u)) {
-        i.first.release();
+        Key(i.first).release();
         i.second.release();
     }
     delete u;
@@ -60,7 +76,7 @@ static inline long size(long map) {
 }
 
 static inline long put(long map, long key, long value) {
-    auto result = longToMap(map).insert_or_assign(Key(key), value);
+    auto result = longToMap(map).emplace(key, value);
     if (result.second) {
         return NONE_ADDRESS;
     } else {
@@ -70,7 +86,7 @@ static inline long put(long map, long key, long value) {
 }
 
 static inline long putIfAbsent(long map, long key, long value) {
-    auto result = longToMap(map).try_emplace(Key(key), value);
+    auto result = longToMap(map).emplace(key, value);
     if (result.second) {
         return NONE_ADDRESS;
     } else {
@@ -80,7 +96,7 @@ static inline long putIfAbsent(long map, long key, long value) {
 
 static inline long get(long map, long key) {
     Map& u = longToMap(map);
-    auto search = u.find(Key(key));
+    auto search = u.find(key);
     if (search == u.end()) {
         return NONE_ADDRESS;
     } else {
@@ -105,7 +121,7 @@ static inline void incrementIterator(long iterator) {
 }
 
 static inline long getIteratorKey(long iterator) {
-    return longToIterator(iterator)->first.address;
+    return longToIterator(iterator)->first;
 }
 
 static inline long getIteratorValue(long iterator) {
@@ -113,7 +129,7 @@ static inline long getIteratorValue(long iterator) {
 }
 
 static inline long nextKey(long iterator) {
-    return (longToIterator(iterator)++)->first.address;
+    return (longToIterator(iterator)++)->first;
 }
 
 static inline long nextValue(long iterator) {

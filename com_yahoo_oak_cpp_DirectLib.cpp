@@ -1,7 +1,7 @@
 #include <jni.h>
 #include <jni_md.h>
 
-#include "oakcpp.hpp"
+#include "oakfolly.hpp"
 #include "com_yahoo_oak_cpp_DirectLib.h"
 
 // Shared library interface
@@ -33,8 +33,8 @@ JNIEXPORT jint JNICALL Java_com_yahoo_oak_cpp_DirectLib_release
  * Signature: ()J
  */
 JNIEXPORT jlong JNICALL Java_com_yahoo_oak_cpp_DirectLib_build
-        (JNIEnv *, jclass) {
-    return build();
+        (JNIEnv *, jclass, jlong maxPopulation) {
+    return build(maxPopulation);
 }
 
 /*

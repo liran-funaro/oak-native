@@ -28,10 +28,10 @@ JNIEXPORT jint JNICALL Java_com_yahoo_oak_cpp_DirectLib_release
 /*
  * Class:     com_yahoo_oak_cpp_DirectLib
  * Method:    build
- * Signature: ()J
+ * Signature: (J)J
  */
 JNIEXPORT jlong JNICALL Java_com_yahoo_oak_cpp_DirectLib_build
-        (JNIEnv *, jclass);
+        (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     com_yahoo_oak_cpp_DirectLib

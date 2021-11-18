@@ -76,12 +76,24 @@ public:
     }
 };
 
+static inline uint32_t keyHash(const Key &k) {
+    return murmur3_32(k.data(), k.size(), 0);
+}
+
 namespace std {
     template<>
     class hash<Key> {
     public:
         std::size_t operator()(const Key &k) const {
-            return murmur3_32(k.data(), k.size(), 0);
+            return keyHash(k);
+        }
+    };
+
+    template<>
+    class equal_to<Key> {
+    public:
+        bool operator()(const Key &lhs, const Key &rhs) const {
+            return lhs == rhs;
         }
     };
 }

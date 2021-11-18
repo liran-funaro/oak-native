@@ -1,6 +1,19 @@
 cmake_minimum_required(VERSION 3.20)
 project(oakcpp)
 
+##############################################################################################################
+# other
+##############################################################################################################
+set(CMAKE_CXX_STANDARD 17)
+
+set(CMAKE_CXX_FLAGS "-O3 -Ofast -Wall -Wextra -fPIC")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+
+add_library(oakcpp SHARED com_yahoo_oak_cpp_DirectLib.cpp)
+
+##############################################################################################################
+# JNI
+##############################################################################################################
 find_package(Java 1.8 REQUIRED)
 find_package(Java COMPONENTS Development)
 
@@ -17,15 +30,19 @@ if(APPLE)
     find_package(JNI REQUIRED)
 endif()
 
-INCLUDE_DIRECTORIES(${JNI_INCLUDE_DIRS})
+include_directories(${JNI_INCLUDE_DIRS})
 
-set(CMAKE_CXX_STANDARD 17)
+##############################################################################################################
+# folly
+##############################################################################################################
+link_directories(folly/lib)
+include_directories(folly/include)
+target_link_libraries(oakcpp PRIVATE folly)
 
-set(CMAKE_CXX_FLAGS "-O3 -Ofast -Wall -Wextra")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
-add_library(oakcpp SHARED com_yahoo_oak_cpp_DirectLib.cpp)
-
+##############################################################################################################
+# install
+##############################################################################################################
 install(
         TARGETS oakcpp
         LIBRARY DESTINATION lib

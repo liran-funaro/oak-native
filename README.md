@@ -7,6 +7,19 @@ sudo yum install jni-dev scl-utils devtoolset-9
 pip3 install cmake -U
 ```
 
+### folly
+clone:
+```shell
+git clone git@github.com:facebook/folly.git
+```
+
+Follow the compilation instruction with one difference. Use:
+```shell
+./build.sh --extra-cmake-defines '{"BUILD_SHARED_LIBS": "ON", "FOLLY_SUPPORT_SHARED_LIBRARY": "ON", "CMAKE_POSITION_INDEPENDENT_CODE": "ON", "BUILD_TESTS": "OFF"}'
+```
+
+Change the include/libs folder to the build output folder.
+
 ## configure
 
 ```shell
