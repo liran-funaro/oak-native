@@ -60,12 +60,11 @@ static inline long size(long map) {
 }
 
 static inline long put(long map, long key, long value) {
-    auto result = longToMap(map).insert_or_assign(Key(key), value);
+    auto result = longToMap(map).try_emplace(Key(key), value);
     if (result.second) {
         return NONE_ADDRESS;
     } else {
-        swap(result.first->second.address, value);
-        return value;
+        return result.first->second.exchange(value);
     }
 }
 

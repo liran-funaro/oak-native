@@ -1,8 +1,10 @@
+#include <ios>
 #include <iostream>
 #include <cstring>
 #include <string>
 #include <utility>
 #include <unordered_map>
+#include <atomic>
 
 #include "murmur.h"
 
@@ -98,9 +100,24 @@ namespace std {
     };
 }
 
-class Value : public Buffer {
+class Value {
 public:
-    explicit Value(long address) : Buffer(address) {}
+    atomic<long> address;
+    explicit Value(long address) : address(address) {}
+    explicit Value(const Value& val) : address(val.address.load()) {}
+
+    long exchange(long value) {
+        return address.exchange(value);
+    }
+
+    void release() {
+        long toRelease = address.exchange(0L);
+        if (toRelease == 0) {
+            return;
+        }
+
+        delete[] longToBytePtr(toRelease);
+    }
 
     Value& operator =(const long) {
         // We don't assign the address here because we don't want "lose" the old address.

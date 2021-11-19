@@ -13,12 +13,12 @@ clone:
 git clone git@github.com:facebook/folly.git
 ```
 
-Follow the compilation instruction with one difference. Use:
+Install dependencies according to provided instruction in folly's readme file.
+Then, build using:
 ```shell
-./build.sh --extra-cmake-defines '{"BUILD_SHARED_LIBS": "ON", "FOLLY_SUPPORT_SHARED_LIBRARY": "ON", "CMAKE_POSITION_INDEPENDENT_CODE": "ON", "BUILD_TESTS": "OFF"}'
+export CPLUS_INCLUDE_PATH=/usr/include/python3.8
+./build.sh --scratch-path ../folly-build --extra-cmake-defines '{"CMAKE_POSITION_INDEPENDENT_CODE": "ON", "BUILD_TESTS": "OFF"}'
 ```
-
-Change the include/libs folder to the build output folder.
 
 ## configure
 

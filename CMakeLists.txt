@@ -6,7 +6,8 @@ project(oakcpp)
 ##############################################################################################################
 set(CMAKE_CXX_STANDARD 17)
 
-set(CMAKE_CXX_FLAGS "-O3 -Ofast -Wall -Wextra -fPIC")
+# -O3 -Ofast
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -fPIC")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
 add_library(oakcpp SHARED com_yahoo_oak_cpp_DirectLib.cpp)
@@ -35,9 +36,10 @@ include_directories(${JNI_INCLUDE_DIRS})
 ##############################################################################################################
 # folly
 ##############################################################################################################
-link_directories(folly/lib)
-include_directories(folly/include)
-target_link_libraries(oakcpp PRIVATE folly)
+set(FOLLY_PREFIX ../folly-build/installed/folly)
+include_directories("${FOLLY_PREFIX}/include")
+find_library(FOLLY_LIBRARY NAMES folly HINTS "${FOLLY_PREFIX}/lib")
+target_link_libraries(oakcpp ${FOLLY_LIBRARY})
 
 
 ##############################################################################################################

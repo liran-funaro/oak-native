@@ -2,6 +2,7 @@
 #include <cstring>
 #include <string>
 #include <utility>
+#include <atomic>
 
 #include <folly/AtomicHashMap.h>
 
@@ -20,9 +21,16 @@ public:
     }
 };
 
+static inline bool isValidKey(long address) {
+    return address > -1 || address < -3;
+}
+
 class equal_to_long {
 public:
     bool operator()(const long lhs, const long rhs) const {
+        if (!isValidKey(lhs) || !isValidKey(rhs)) {
+            return false;
+        }
         return Key(lhs) == Key(rhs);
     }
 };
@@ -59,13 +67,15 @@ static inline int release(long bufferAddress) {
 }
 
 static inline long build(long maxPopulation) {
-    return ptrToLong(new Map(maxPopulation));
+    Map::Config c;
+    c.maxLoadFactor = 0.5;
+    return ptrToLong(new Map(maxPopulation, c));
 }
 
 static inline void destroy(long map) {
     auto * u = longToMapPtr(map);
     for (auto & i : (*u)) {
-        Key(i.first).release();
+        Buffer(i.first).release();
         i.second.release();
     }
     delete u;
@@ -76,17 +86,16 @@ static inline long size(long map) {
 }
 
 static inline long put(long map, long key, long value) {
-    auto result = longToMap(map).emplace(key, value);
+    auto result = longToMap(map).emplace(key, Value(value));
     if (result.second) {
         return NONE_ADDRESS;
     } else {
-        swap(result.first->second.address, value);
-        return value;
+        return result.first->second.exchange(value);
     }
 }
 
 static inline long putIfAbsent(long map, long key, long value) {
-    auto result = longToMap(map).emplace(key, value);
+    auto result = longToMap(map).emplace(key, Value(value));
     if (result.second) {
         return NONE_ADDRESS;
     } else {
