@@ -1,16 +1,14 @@
 cmake_minimum_required(VERSION 3.20)
-project(oakcpp)
+project(oak-native)
+include_directories(inc)
 
-##############################################################################################################
-# other
-##############################################################################################################
 set(CMAKE_CXX_STANDARD 17)
 
-# -O3 -Ofast
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -fPIC")
+set(CMAKE_CXX_FLAGS "-O3 -Ofast -Wall -Wextra -fPIC")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
+include_directories(/usr/local/include)
 
-add_library(oakcpp SHARED com_yahoo_oak_cpp_DirectLib.cpp)
+add_library(oak-native SHARED src/com_yahoo_oak_jni_OakNativeLib.cpp)
 
 ##############################################################################################################
 # JNI
@@ -36,16 +34,20 @@ include_directories(${JNI_INCLUDE_DIRS})
 ##############################################################################################################
 # folly
 ##############################################################################################################
-set(FOLLY_PREFIX ../folly-build/installed/folly)
-include_directories("${FOLLY_PREFIX}/include")
-find_library(FOLLY_LIBRARY NAMES folly HINTS "${FOLLY_PREFIX}/lib")
-target_link_libraries(oakcpp ${FOLLY_LIBRARY})
+set(FOLLY_INSTALL_PREFIX ../folly-build/installed)
+FILE(GLOB FOLLY_INSTALLED_LIST ${FOLLY_INSTALL_PREFIX}/*)
+FOREACH(subdir ${FOLLY_INSTALLED_LIST})
+    include_directories(${subdir}/include)
+ENDFOREACH()
+
+find_library(FOLLY_LIBRARY NAMES folly HINTS ${FOLLY_INSTALL_PREFIX}/folly/lib)
+target_link_libraries(oak-native PRIVATE ${FOLLY_LIBRARY})
 
 
 ##############################################################################################################
 # install
 ##############################################################################################################
 install(
-        TARGETS oakcpp
+        TARGETS oak-native
         LIBRARY DESTINATION lib
 )

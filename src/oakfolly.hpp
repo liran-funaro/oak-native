@@ -22,7 +22,7 @@ public:
 };
 
 static inline bool isValidKey(long address) {
-    return address > -1 || address < -3;
+    return address > 0;
 }
 
 class equal_to_long {
