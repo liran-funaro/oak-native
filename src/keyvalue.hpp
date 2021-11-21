@@ -11,6 +11,10 @@
 #ifndef _key_value_hpp
 #define _key_value_hpp
 
+#include <jni.h>
+
+const unsigned long NONE_ADDRESS = 0;
+
 using namespace std;
 
 static inline long ptrToLong(void* ptr) {
@@ -19,10 +23,6 @@ static inline long ptrToLong(void* ptr) {
 
 static inline uint8_t * longToBytePtr(long ptr) {
     return (uint8_t *) ptr;
-}
-
-static inline int32_t * longToIntPtr(long ptr) {
-    return (int32_t *) ptr;
 }
 
 
@@ -35,7 +35,7 @@ public:
     explicit Buffer(long address) : address(address) {}
 
     static Buffer alloc(int size) {
-        Buffer b(new uint8_t[sizeof(int) + size]);
+        Buffer b(new uint8_t[sizeof(jint) + size]);
         b.size() = size;
         return b;
     }
@@ -44,24 +44,20 @@ public:
         delete[] asByteArray();
     }
 
-    uint8_t * asByteArray(int offset = 0) const {
-        return longToBytePtr(address) + offset;
+    [[nodiscard]] uint8_t * asByteArray() const {
+        return ((uint8_t *) address);
     }
 
-    int32_t * asIntArray(int offset = 0) const {
-        return longToIntPtr(address) + offset;
+    [[nodiscard]] jint * asIntArray() const {
+        return ((jint *) address);
     }
 
-    int &size() {
+    [[nodiscard]] jint & size() const {
         return *asIntArray();
     }
 
-    const int &size() const {
-        return *asIntArray();
-    }
-
-    uint8_t *data() const {
-        return (uint8_t *) asIntArray(1);
+    [[nodiscard]] uint8_t *data() const {
+        return (uint8_t *) (asIntArray() + 1);
     }
 };
 
@@ -110,13 +106,15 @@ public:
         return address.exchange(value);
     }
 
-    void release() {
-        long toRelease = address.exchange(0L);
-        if (toRelease == 0) {
-            return;
+    jint release() {
+        long toRelease = address.exchange(NONE_ADDRESS);
+        if (toRelease == NONE_ADDRESS) {
+            return false;
         }
 
+        jint size = *((jint *) toRelease);
         delete[] longToBytePtr(toRelease);
+        return size;
     }
 
     Value& operator =(const long) {

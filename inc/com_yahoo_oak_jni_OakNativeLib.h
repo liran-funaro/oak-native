@@ -20,9 +20,9 @@ JNIEXPORT jlong JNICALL Java_com_yahoo_oak_jni_OakNativeLib_alloc
 /*
  * Class:     com_yahoo_oak_jni_OakNativeLib
  * Method:    release
- * Signature: (J)I
+ * Signature: (J)V
  */
-JNIEXPORT jint JNICALL Java_com_yahoo_oak_jni_OakNativeLib_release
+JNIEXPORT void JNICALL Java_com_yahoo_oak_jni_OakNativeLib_release
         (JNIEnv *, jclass, jlong);
 
 /*
@@ -48,6 +48,30 @@ JNIEXPORT void JNICALL Java_com_yahoo_oak_jni_OakNativeLib_destroy
  */
 JNIEXPORT jlong JNICALL Java_com_yahoo_oak_jni_OakNativeLib_size
         (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     com_yahoo_oak_jni_OakNativeLib
+ * Method:    allocatedBytes
+ * Signature: (J)J
+ */
+JNIEXPORT jlong JNICALL Java_com_yahoo_oak_jni_OakNativeLib_allocatedBytes
+        (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     com_yahoo_oak_jni_OakNativeLib
+ * Method:    countedAlloc
+ * Signature: (JI)J
+ */
+JNIEXPORT jlong JNICALL Java_com_yahoo_oak_jni_OakNativeLib_countedAlloc
+        (JNIEnv *, jclass, jlong, jint);
+
+/*
+ * Class:     com_yahoo_oak_jni_OakNativeLib
+ * Method:    countedRelease
+ * Signature: (JJ)V
+ */
+JNIEXPORT void JNICALL Java_com_yahoo_oak_jni_OakNativeLib_countedRelease
+        (JNIEnv *, jclass, jlong, jlong);
 
 /*
  * Class:     com_yahoo_oak_jni_OakNativeLib
