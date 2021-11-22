@@ -96,7 +96,9 @@ JNIEXPORT jlong JNICALL Java_com_yahoo_oak_jni_OakNativeLib_remove
         if (value == NONE_ADDRESS) {
             return NONE_ADDRESS;
         }
-        countedRelease(map, search->first);
+        long internalKey = search->first;
+        u.m.erase(internalKey);
+        countedRelease(map, internalKey);
         return value;
     }
 }
